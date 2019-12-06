@@ -67,16 +67,16 @@
 
   <div id="app" style="position: absolute;right: 20%;top: 50%;">
     <div class="form-group">
-      <select class="form-control">
-        <option>
-          新北市
+      <select class="form-control" v-model="selected">
+        <option v-for="item in place_data" :value="item.city">
+          {{ item.city }}
         </option>
       </select>
       <div class="card" style="width: 18rem;">
-        <div class="card-body">
-          <p>天氣敘述: </p>
-          <p>當前氣溫: </p>
-          <p>降雨機率: </p>
+        <div class="card-body" v-if="now_area">
+          <p>天氣敘述: {{ now_area.weather }}</p>
+          <p>當前氣溫: {{ now_area.tempature }} 度</p>
+          <p>降雨機率: {{ now_area.rainfall }} %</p>
         </div>
       </div>
 
@@ -369,16 +369,56 @@
   var vm = new Vue({
     el: "#app",
     data: {
-      filter: '',
+      selected: '台北',
       place_data: place_data
     },
     // 初始化要做的事情
     created: function () {
+      for (item in place_data) {
+        getWeather(item)
+      }
+
+      let self = this;
+
+      function getWeather(item) {
+        var id = place_data[item].id
+        axios({
+              methods: 'get',
+              url: 'https://works.ioa.tw/weather/api/weathers/' + id + '.json'
+            })
+            .then((response) => {
+              for (item in place_data) {
+                if (place_data[item].id == id) {
+                  self.place_data[item].rainfall = response.data.rainfall;
+                  self.place_data[item].tempature = response.data.felt_air_temp;
+                  self.place_data[item].weather = response.data.desc;
+                }
+              }
+            });
+      }
     },
+    computed: {
+      now_area: function () {
+        var self = this
+
+        var result = place_data.filter(function (place) {
+          return place.city == self.selected
+        });
+
+        if (result.length == 0) {
+          return null;
+        }
+
+        return result[0]
+      }
+    },
+
   })
 
 
   $("path").click(function (e) {
     var cityname = $(this).attr("name")
+
+    vm.selected = cityname
   })
 </script>
