@@ -1,8 +1,10 @@
-var http = require('http')
+var express = require('express');
+var app = express();
 
-http.createServer(function(req, res) {
-  res.writeHead(200, {'Content-Type': 'application/json'})
-  res.end(JSON.stringify({ a: 1 }))
-}).listen(3000)
+app.get('/', function (req, res) {
+  res.send('GET request to the homepage');
+});
 
-console.log("HTTP server is listening at port 3000.")
+app.listen(3000, function () {
+  console.log("HTTP server is listening at port 3000.")
+});
